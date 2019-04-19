@@ -1,9 +1,13 @@
-import feathers from '@feathersjs/feathers'
+import feathers from '@feathersjs/feathers';
+import rest from '@feathersjs/rest-client';
 
 import React, { Component } from 'react';
+
 import { Card, CardMedia } from '@rmwc/card';
 import { Grid, GridCell } from '@rmwc/grid';
 import { Typography } from '@rmwc/typography';
+
+import Form from "react-jsonschema-form"  ;
 
 import '@material/layout-grid/dist/mdc.layout-grid.css';
 import '@material/card/dist/mdc.card.css';
@@ -11,14 +15,82 @@ import '@material/button/dist/mdc.button.css';
 import '@material/icon-button/dist/mdc.icon-button.css';
 import '@material/typography/dist/mdc.typography.css';
 
+import '../static/bootstrap.min.css';
+
+const Register = {
+  title: "Registration",
+  type: "object",
+  required: ["username", "password"],
+  properties: {
+    username: { type: "string", title: "Username" },
+    password: { type: "string", title: "Password" },
+    confirm_password: { type: "string", title: "Confirm Password" }
+  }
+};
+
+const Login = {
+  title: "Login",
+  type: "object",
+  required: ["username", "password"],
+  properties: {
+    username: { type: "string", title: "Username" },
+    password: { type: "string", title: "Password" }
+  }
+};
+
+const log = (type) => (data) => {
+  console.log(type, data)
+}
+
+
+const app = feathers();
+
+let fetch, restClient, init;
+// Connect to the same as the browser URL (only in the browser)
+
+
 
 class Index extends Component {
   constructor() {
+    console.log('CONSTRUCTOR')
     super()
   }
 
-  static async getInitialProps(){
-    return {}
+  static async getInitialProps({ req }) {
+    console.log('GETINITIAL')
+    if (!init) {
+      if (req) {
+        restClient = rest('http://localhost:3030');
+        fetch = require('node-fetch');
+        // Configure an AJAX library (see below) with that client 
+      } else {
+        restClient = rest()
+        fetch = window.fetch
+      }
+      app.configure(restClient.fetch(fetch));
+      init = app.service('init');
+    }
+
+
+
+    const { state } = await init.get('state')
+    console.log('CLIENT_GOT_STATE', state)
+
+    return { state }
+  }
+
+  async register({formData}){
+    if (!init) {
+      restClient = rest()
+      fetch = window.fetch
+      app.configure(restClient.fetch(fetch));
+      init = app.service('init');
+    }
+    console.log('call register')
+    const users = app.service('users')
+    console.log('USERS?',users)
+    const result = await users.create(formData)
+    console.log(result)
   }
 
   render() {
@@ -54,16 +126,12 @@ class Index extends Component {
                 theme="textSecondaryOnBackground"
                 style={{ marginTop: '-1rem' }}
               >
-                {this.props.page}
+
+                <Form schema={this.props.state === 'init' ? Register : Login}
+                  onChange={log("changed")}
+                  onSubmit={this.register.bind(this)}
+                  onError={log("errors")} />
               </Typography>
-              <Typography
-                use="body1"
-                tag="div"
-                theme="textSecondaryOnBackground"
-              >
-                Visit ten places on our planet that are undergoing the biggest
-                changes today.
-            </Typography>
             </div>
           </Card>
         </GridCell>
