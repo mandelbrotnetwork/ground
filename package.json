@@ -23,7 +23,7 @@
     "npm": ">= 3.0.0"
   },
   "scripts": {
-    "test": "npm run eslint && NODE_ENV= npm run jest",
+    "test": "npm run eslint && NODE_ENV=TEST npm run jest",
     "eslint": "eslint server/. test/. --config .eslintrc.json",
     "server:dev": "nodemon server/",
     "server:start:prod": "NODE_ENV=production node server/",
@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@feathersjs/authentication": "^2.1.16",
+    "@feathersjs/authentication-client": "^1.0.11",
     "@feathersjs/authentication-jwt": "^2.0.10",
     "@feathersjs/authentication-local": "^1.2.9",
     "@feathersjs/configuration": "^2.0.6",

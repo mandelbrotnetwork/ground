@@ -1,5 +1,4 @@
-import feathers from '@feathersjs/feathers';
-import rest from '@feathersjs/rest-client';
+
 
 import React, { Component } from 'react';
 
@@ -8,6 +7,8 @@ import { Grid, GridCell } from '@rmwc/grid';
 import { Typography } from '@rmwc/typography';
 
 import Form from "react-jsonschema-form"  ;
+
+import getApp from '../utils/feathers.js';
 
 import '@material/layout-grid/dist/mdc.layout-grid.css';
 import '@material/card/dist/mdc.card.css';
@@ -20,9 +21,9 @@ import '../static/bootstrap.min.css';
 const Register = {
   title: "Registration",
   type: "object",
-  required: ["username", "password"],
+  required: ["email", "password"],
   properties: {
-    username: { type: "string", title: "Username" },
+    email: { type: "string", title: "email" },
     password: { type: "string", title: "Password" },
     confirm_password: { type: "string", title: "Confirm Password" }
   }
@@ -31,9 +32,9 @@ const Register = {
 const Login = {
   title: "Login",
   type: "object",
-  required: ["username", "password"],
+  required: ["email", "password"],
   properties: {
-    username: { type: "string", title: "Username" },
+    email: { type: "string", title: "email" },
     password: { type: "string", title: "Password" }
   }
 };
@@ -41,14 +42,6 @@ const Login = {
 const log = (type) => (data) => {
   console.log(type, data)
 }
-
-
-const app = feathers();
-
-let fetch, restClient, init;
-// Connect to the same as the browser URL (only in the browser)
-
-
 
 class Index extends Component {
   constructor() {
@@ -58,18 +51,8 @@ class Index extends Component {
 
   static async getInitialProps({ req }) {
     console.log('GETINITIAL')
-    if (!init) {
-      if (req) {
-        restClient = rest('http://localhost:3030');
-        fetch = require('node-fetch');
-        // Configure an AJAX library (see below) with that client 
-      } else {
-        restClient = rest()
-        fetch = window.fetch
-      }
-      app.configure(restClient.fetch(fetch));
-      init = app.service('init');
-    }
+    const app = await getApp(req)
+    const init = app.service('init');
 
 
 
@@ -80,17 +63,22 @@ class Index extends Component {
   }
 
   async register({formData}){
-    if (!init) {
-      restClient = rest()
-      fetch = window.fetch
-      app.configure(restClient.fetch(fetch));
-      init = app.service('init');
-    }
-    console.log('call register')
+    const app = await getApp()
     const users = app.service('users')
     console.log('USERS?',users)
     const result = await users.create(formData)
     console.log(result)
+  }
+
+  async login({formData}){
+    const app = await getApp()
+
+    await app.authenticate({
+      strategy: 'local',
+      ...formData
+    }).catch(e => {
+      console.warn(e)
+    })
   }
 
   render() {
@@ -129,7 +117,7 @@ class Index extends Component {
 
                 <Form schema={this.props.state === 'init' ? Register : Login}
                   onChange={log("changed")}
-                  onSubmit={this.register.bind(this)}
+                  onSubmit={this.props.state === 'init' ? this.register.bind(this) : this.login.bind(this)}
                   onError={log("errors")} />
               </Typography>
             </div>
