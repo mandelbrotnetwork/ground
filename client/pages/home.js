@@ -1,5 +1,3 @@
-
-
 import React, { memo } from 'react';
 
 import Panel from '../components/Panel.js';
@@ -10,7 +8,7 @@ import '@material/linear-progress/dist/mdc.linear-progress.css';
 const Index = memo(
   () => (
     <Panel>
-      <LinearProgress size={72} />
+      Home
     </Panel>
   )
 )
