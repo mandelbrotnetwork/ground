@@ -1,3 +1,3 @@
 [submodule "mantle"]
 	path = mantle
-	url = https://github.com/mandelbrotnetwork/mantle
+	url = git@github.com:mandelbrotnetwork/mantle
