@@ -1,3 +1,5 @@
 [submodule "mantle"]
 	path = mantle
 	url = git@github.com:mandelbrotnetwork/mantle
+[submodule "mantle.mantle"]
+	branch = master
