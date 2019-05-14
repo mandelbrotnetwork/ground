@@ -1,4 +1,0 @@
-[submodule "mantle"]
-	path = mantle
-	url = git@github.com:mandelbrotnetwork/mantle
-	branch = master
